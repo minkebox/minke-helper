@@ -1,0 +1,14 @@
+#! /bin/sh
+
+case "$1" in
+  deconfig)
+    ;;
+  bound)
+    ifconfig $interface $ip netmask $subnet
+    route add -net default gw $router
+    ;;
+  renew)
+    ;;
+  nak)
+    ;;
+esac
