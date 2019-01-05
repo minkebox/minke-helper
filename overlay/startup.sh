@@ -38,9 +38,9 @@ __EOF__
       txt=""
     fi
     if [ "${txt}" != "" ]; then
-      txt="    <txt-record>${txt}</txt-record>\n"
+      txt="<txt-record>${txt}</txt-record>"
     fi
-    echo "  <service>\n    <type>${type}</type>\n    <port>${port}</port>\n${txt}  </service>" >> /etc/avahi/services/${NAME}.service
+    echo "  <service><type>${type}</type><port>${port}</port>${txt}</service>" >> /etc/avahi/services/${NAME}.service
   done
   echo "</service-group>" >> /etc/avahi/services/${NAME}.service
   echo "MINKE:MDNS:UP"
