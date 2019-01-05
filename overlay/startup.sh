@@ -74,6 +74,7 @@ down()
     killall avahi-daemon
     echo "MINKE:MDNS:DOWN"
   fi
+  echo "MINKE:DOWN"
 }
 
 trap "down; killall sleep; exit" TERM INT
