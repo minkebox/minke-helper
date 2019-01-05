@@ -23,6 +23,12 @@ fi
 
 if [ "${ENABLE_MDNS}" != "" ] ; then
   /usr/sbin/avahi-daemon --no-drop-root -D
+  cat > /etc/avahi/services/${NAME}.service <<__EOF__
+<?xml version="1.0" standalone='no'?>
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+<service-group>
+  <name replace-wildcards="yes">%h</name>
+__EOF__
   for map in ${ENABLE_MDNS}; do
     type=${map%%:*}
     map3=${map#*:}
@@ -32,10 +38,11 @@ if [ "${ENABLE_MDNS}" != "" ] ; then
       txt=""
     fi
     if [ "${txt}" != "" ]; then
-      txt="TXT ${txt}"
+      txt="    <txt-record>${txt}</txt-record>\n"
     fi
-    avahi-publish -s ${NAME} ${type} ${port} ${txt}
+    echo "  <service>\n    <type>${type}</type>\n    <port>${port}</port>\n${txt}  </service>" >> /etc/avahi/services/${NAME}.service
   done
+  echo "</service-group>" >> /etc/avahi/services/${NAME}.service
   echo "MINKE:MDNS:UP"
 fi
 
