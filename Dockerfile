@@ -1,7 +1,8 @@
 FROM alpine:edge
 
-COPY overlay/ /
+RUN apk --no-cache add miniupnpc avahi ;\
+    rm -f /etc/avahi/services/*.service
 
-RUN apk --no-cache add miniupnpc
+COPY overlay/ /
 
 ENTRYPOINT ["/startup.sh"]
