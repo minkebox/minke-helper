@@ -22,7 +22,6 @@ if [ "${ENABLE_DHCP}" != "" ]; then
 fi
 
 if [ "${ENABLE_MDNS}" != "" ] ; then
-  /usr/sbin/avahi-daemon --no-drop-root -D
   cat > /etc/avahi/services/${NAME}.service <<__EOF__
 <?xml version="1.0" standalone='no'?>
 <!DOCTYPE service-group SYSTEM "avahi-service.dtd">
@@ -43,6 +42,7 @@ __EOF__
     echo "  <service><type>${type}</type><port>${port}</port>${txt}</service>" >> /etc/avahi/services/${NAME}.service
   done
   echo "</service-group>" >> /etc/avahi/services/${NAME}.service
+  /usr/sbin/avahi-daemon --no-drop-root -D
   echo "MINKE:MDNS:UP"
 fi
 
