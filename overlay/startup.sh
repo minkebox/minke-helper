@@ -6,10 +6,6 @@ fi
 TTL=3600 # 1 hour
 TTL2=1800 # TTL/2
 
-if [ "${NAME}" = "" ]; then
-  echo "Name not set"
-  exit 1
-fi
 if [ "${IP}" = "" -a "${ENABLE_DHCP}" = "" ]; then
   echo "No IP or ENABLE_DHCP set"
   exit 1
@@ -22,7 +18,7 @@ if [ "${ENABLE_DHCP}" != "" ]; then
 fi
 
 if [ "${ENABLE_MDNS}" != "" ] ; then
-  cat > /etc/avahi/services/${NAME}.service <<__EOF__
+  cat > /etc/avahi/services/helper.service <<__EOF__
 <?xml version="1.0" standalone='no'?>
 <!DOCTYPE service-group SYSTEM "avahi-service.dtd">
 <service-group>
@@ -39,9 +35,9 @@ __EOF__
     if [ "${txt}" != "" ]; then
       txt="<txt-record>${txt}</txt-record>"
     fi
-    echo "  <service><type>${type}</type><port>${port}</port>${txt}</service>" >> /etc/avahi/services/${NAME}.service
+    echo "  <service><type>${type}</type><port>${port}</port>${txt}</service>" >> /etc/avahi/services/helper.service
   done
-  echo "</service-group>" >> /etc/avahi/services/${NAME}.service
+  echo "</service-group>" >> /etc/avahi/services/helper.service
   /usr/sbin/avahi-daemon --no-drop-root -D
   echo "MINKE:MDNS:UP"
 fi
