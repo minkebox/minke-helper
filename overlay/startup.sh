@@ -49,7 +49,7 @@ up()
       # port:protocol
       port=${map%%:*}
       protocol=${map#*:}
-      upnpc -a ${IP} ${port} ${port} ${protocol} ${TTL}
+      upnpc -m ${IFACE} -a ${IP} ${port} ${port} ${protocol} ${TTL}
       echo "MINKE:NAT:UP ${IP} ${port} ${protocol} ${TTL}"
     done
   fi
@@ -62,7 +62,7 @@ down()
       # port:protocol
       port=${map%%:*}
       protocol=${map#*:}
-      upnpc -d ${port} ${protocol}
+      upnpc -m ${IFACE} -d ${port} ${protocol}
       echo "MINKE:NAT:DOWN ${IP} ${port} ${protocol}"
     done
   fi
