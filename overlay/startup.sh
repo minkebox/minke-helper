@@ -12,7 +12,7 @@ if [ "${IP}" = "" -a "${ENABLE_DHCP}" = "" ]; then
 fi
 
 if [ "${ENABLE_DHCP}" != "" ]; then
-  udhcpc -R -i ${IFACE} -s /etc/udhcpc.script -F ${HOSTNAME} -x hostname:${HOSTNAME}
+  udhcpc -i ${IFACE} -s /etc/udhcpc.script -F ${HOSTNAME} -x hostname:${HOSTNAME} -C
   IP=$(ip addr show dev ${IFACE} | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -1)
   echo "MINKE:DHCP:UP ${IFACE} ${IP}"
 fi
