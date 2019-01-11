@@ -6,16 +6,12 @@ fi
 TTL=3600 # 1 hour
 TTL2=1800 # TTL/2
 
-if [ "${IP}" = "" -a "${ENABLE_DHCP}" = "" ]; then
-  echo "No IP or ENABLE_DHCP set"
-  exit 1
-fi
-
 if [ "${ENABLE_DHCP}" != "" ]; then
   udhcpc -i ${IFACE} -s /etc/udhcpc.script -F ${HOSTNAME} -x hostname:${HOSTNAME} -C -x 61:"'${HOSTNAME}'"
-  IP=$(ip addr show dev ${IFACE} | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -1)
   echo "MINKE:DHCP:UP ${IFACE} ${IP}"
 fi
+
+IP=$(ip addr show dev ${IFACE} | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -1)
 
 if [ "${ENABLE_MDNS}" != "" ] ; then
   cat > /etc/avahi/services/helper.service <<__EOF__
@@ -38,6 +34,11 @@ __EOF__
     echo "  <service><type>${type}</type><port>${port}</port>${txt}</service>" >> /etc/avahi/services/helper.service
   done
   echo "</service-group>" >> /etc/avahi/services/helper.service
+  echo "
+[server]
+enable-dbus=no
+allow-interfaces=${IFACE}
+" > /etc/avahi/avahi-daemon.conf
   /usr/sbin/avahi-daemon --no-drop-root -D
   echo "MINKE:MDNS:UP"
 fi
