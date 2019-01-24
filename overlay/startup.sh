@@ -1,8 +1,11 @@
 #! /bin/sh
 
-if [ "${IFACE}" = "" ]; then
-  IFACE=eth0
+if [ "${__HOME_INTERFACE}" != "" ]; then
+  IFACE=${__HOME_INTERFACE}
+elif [ "${__PRIVATE_INTERFACE}" != "" ]; then
+  IFACE=${__PRIVATE_INTERFACE}
 fi
+
 TTL=3600 # 1 hour
 TTL2=1800 # TTL/2
 
