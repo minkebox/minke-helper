@@ -27,9 +27,8 @@ __EOF__
     txt=${map3#*:}
     if [ "${port}" = "${txt}" ]; then
       txt=""
-    fi
-    if [ "${txt}" != "" ]; then
-      txt="<txt-record>${txt}</txt-record>"
+    else
+      txt=$(echo ${txt} | sed "s/%20/ /g")
     fi
     echo "  <service><type>${type}</type><port>${port}</port>${txt}</service>" >> /etc/avahi/services/helper.service
   done
