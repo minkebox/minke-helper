@@ -9,12 +9,20 @@ fi
 TTL=3600 # 1 hour
 TTL2=1800 # TTL/2
 
+while ! ifconfig ${IFACE} > /dev/null 2>&1 ; do 
+  sleep 1;
+done
+
 if [ "${ENABLE_DHCP}" != "" ]; then
   udhcpc -i ${IFACE} -s /etc/udhcpc.script -F ${HOSTNAME} -x hostname:${HOSTNAME} -C -x 61:"'${HOSTNAME}'"
   echo "MINKE:DHCP:UP ${IFACE} ${IP}"
 fi
 
 IP=$(ip addr show dev ${IFACE} | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -1)
+
+if [ "${__GATEWAY}" != "" ]; then
+  route add -net default gw ${__GATEWAY}
+fi
 
 if [ "${ENABLE_MDNS}" != "" ] ; then
   cat > /etc/avahi/services/helper.service <<__EOF__
