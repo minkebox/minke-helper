@@ -19,7 +19,11 @@ if [ "${ENABLE_DHCP}" != "" ]; then
 fi
 
 IP=$(ip addr show dev ${IFACE} | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -1)
-echo "MINKE:IP ${IP}"
+if [ "${__HOME_INTERFACE}" != "" ]; then
+  echo "MINKE:HOME:IP ${IP}"
+elif [ "${__PRIVATE_INTERFACE}" != "" ]; then
+  echo "MINKE:PRIVATE:IP ${IP}"
+fi
 
 if [ "${__GATEWAY}" != "" ]; then
   route add -net default gw ${__GATEWAY}
