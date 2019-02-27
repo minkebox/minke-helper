@@ -70,6 +70,10 @@ if [ "${__GATEWAY}" != "" ]; then
   echo "${__GATEWAY} SERVICES" >> /etc/hosts
 fi
 
+echo "search ${__DOMAINNAME}. local.
+nameserver ${__DNSSERVER}
+options ndots:1 timeout:1 attempts:1 ndots:0" > /etc/resolv.conf
+
 up()
 {
   if [ "${ENABLE_NAT}" != "" ]; then
