@@ -5,9 +5,11 @@ if [ "${__HOME_INTERFACE}" != "" ]; then
 elif [ "${__PRIVATE_INTERFACE}" != "" ]; then
   IFACE=${__PRIVATE_INTERFACE}
 fi
+GLOBAL_HOSTNAME=${__GLOBALID}
 
 TTL=3600 # 1 hour
 TTL2=1800 # TTL/2
+DDNS_URL="https://minkebox.net/update"
 
 while ! ifconfig ${IFACE} > /dev/null 2>&1 ; do 
   sleep 1;
@@ -74,6 +76,8 @@ echo "search ${__DOMAINNAME}. local.
 nameserver ${__DNSSERVER}
 options ndots:1 timeout:1 attempts:1 ndots:0" > /etc/resolv.conf
 
+LAST_EXTIP=""
+
 up()
 {
   if [ "${ENABLE_NAT}" != "" ]; then
@@ -81,9 +85,14 @@ up()
       # port:protocol
       port=${map%%:*}
       protocol=${map#*:}
-      upnpc -m ${IFACE} -a ${IP} ${port} ${port} ${protocol} ${TTL}
+      upnpc -e ${HOSTNAME} -m ${IFACE} -a ${IP} ${port} ${port} ${protocol} ${TTL}
       echo "MINKE:NAT:UP ${IP} ${port} ${protocol} ${TTL}"
     done
+    EXTIP=$(upnpc -m ${IFACE} -s | grep ExternalIPAddress | sed "s/^.*= //")
+    if [ "${EXTIP}" != "${LAST_EXTIP}" ]; then
+      wget --no-check-certificate -q -O - "${DDNS_URL}?host=${GLOBAL_HOSTNAME}&ip=${EXTIP}"
+      LAST_EXTIP="${EXTIP}"
+    fi
   fi
 }
 
