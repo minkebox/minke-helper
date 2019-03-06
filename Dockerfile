@@ -1,4 +1,4 @@
-FROM alpine:edge
+FROM alpine:latest
 
 RUN apk --no-cache add miniupnpc avahi iptables ;\
     rm -f /etc/avahi/services/*.service
