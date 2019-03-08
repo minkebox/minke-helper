@@ -76,8 +76,6 @@ echo "search ${__DOMAINNAME}. local.
 nameserver ${__DNSSERVER}
 options ndots:1 timeout:1 attempts:1 ndots:0" > /etc/resolv.conf
 
-LAST_EXTIP=""
-
 up()
 {
   if [ "${ENABLE_NAT}" != "" ]; then
@@ -88,11 +86,6 @@ up()
       upnpc -e ${HOSTNAME} -m ${IFACE} -a ${IP} ${port} ${port} ${protocol} ${TTL}
       echo "MINKE:NAT:UP ${IP} ${port} ${protocol} ${TTL}"
     done
-    EXTIP=$(upnpc -m ${IFACE} -s | grep ExternalIPAddress | sed "s/^.*= //")
-    if [ "${EXTIP}" != "${LAST_EXTIP}" ]; then
-      wget --no-check-certificate -q -O - "${DDNS_URL}?host=${GLOBAL_HOSTNAME}&ip=${EXTIP}"
-      LAST_EXTIP="${EXTIP}"
-    fi
   fi
 }
 
