@@ -36,7 +36,6 @@ if [ "${ENABLE_MDNS}" != "" ] ; then
 <?xml version="1.0" standalone='no'?>
 <!DOCTYPE service-group SYSTEM "avahi-service.dtd">
 <service-group>
-  <name replace-wildcards="yes">%h</name>
 __EOF__
   for map in ${ENABLE_MDNS}; do
     type=${map%%:*}
