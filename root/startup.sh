@@ -37,6 +37,7 @@ if [ "${ENABLE_MDNS}" != "" ] ; then
 <!DOCTYPE service-group SYSTEM "avahi-service.dtd">
 <service-group>
 __EOF__
+  echo "<name>${HOSTNAME}</name>" >> /etc/avahi/services/helper.service
   for map in ${ENABLE_MDNS}; do
     type=${map%%:*}
     map3=${map#*:}
