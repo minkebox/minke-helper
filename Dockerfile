@@ -1,7 +1,6 @@
 FROM alpine:latest
 
-RUN apk --no-cache add miniupnpc avahi iptables ;\
-    rm -f /etc/avahi/services/*.service
+RUN apk --no-cache add miniupnpc
 
 COPY root/ /
 

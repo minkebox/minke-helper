@@ -31,35 +31,6 @@ if [ "${__GATEWAY}" != "" ]; then
   route add -net default gw ${__GATEWAY}
 fi
 
-if [ "${ENABLE_MDNS}" != "" ] ; then
-  cat > /etc/avahi/services/helper.service <<__EOF__
-<?xml version="1.0" standalone='no'?>
-<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
-<service-group>
-__EOF__
-  echo "<name>${HOSTNAME}</name>" >> /etc/avahi/services/helper.service
-  for map in ${ENABLE_MDNS}; do
-    type=${map%%:*}
-    map3=${map#*:}
-    port=${map3%%:*}
-    txt=${map3#*:}
-    if [ "${port}" = "${txt}" ]; then
-      txt=""
-    else
-      txt=$(echo ${txt} | sed "s/%20/ /g")
-    fi
-    echo "  <service><type>${type}</type><port>${port}</port>${txt}</service>" >> /etc/avahi/services/helper.service
-  done
-  echo "</service-group>" >> /etc/avahi/services/helper.service
-  echo "
-[server]
-enable-dbus=no
-allow-interfaces=${IFACE}
-" > /etc/avahi/avahi-daemon.conf
-  /usr/sbin/avahi-daemon --no-drop-root -D
-  echo "MINKE:MDNS:UP"
-fi
-
 echo "127.0.0.1 localhost
 ::1	localhost ip6-localhost ip6-loopback
 fe00::0	ip6-localnet
@@ -69,7 +40,7 @@ ff02::2	ip6-allrouters
 ${IP} $(hostname)
 ${__DNSSERVER} dns-server" > /etc/hosts
 if [ "${__GATEWAY}" != "" ]; then
-  echo "${__GATEWAY} SERVICES" >> /etc/hosts
+  echo "${__GATEWAY} services" >> /etc/hosts
 fi
 
 echo "search ${__DOMAINNAME}. local.
@@ -103,10 +74,6 @@ down()
   if [ "${ENABLE_DHCP}" != "" ]; then
     killall udhcpc
     echo "MINKE:DHCP:DOWN ${IFACE} ${IP}"
-  fi
-  if [ "${ENABLE_MDNS}" != "" ] ; then
-    killall avahi-daemon
-    echo "MINKE:MDNS:DOWN"
   fi
   echo "MINKE:DOWN"
 }
