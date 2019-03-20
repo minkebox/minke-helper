@@ -9,7 +9,6 @@ GLOBAL_HOSTNAME=${__GLOBALID}
 
 TTL=3600 # 1 hour
 TTL2=1800 # TTL/2
-DDNS_URL="https://minkebox.net/update"
 
 while ! ifconfig ${IFACE} > /dev/null 2>&1 ; do 
   sleep 1;
