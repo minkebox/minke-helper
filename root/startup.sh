@@ -83,8 +83,13 @@ up
 
 echo "MINKE:UP"
 
-while true; do
-  sleep ${TTL2} &
+if [ "${ENABLE_NAT}" != "" ]; then
+  while true; do
+    sleep ${TTL2} &
+    wait "$!"
+    up
+  done
+else
+  sleep 2147483647d &
   wait "$!"
-  up
-done
+fi
