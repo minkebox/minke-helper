@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/sh -x
 
 case "$1" in
   deconfig)
@@ -8,6 +8,13 @@ case "$1" in
     if [ "${interface}" = "eth0" ]; then
       route add -net default gw ${router}
     fi
+    if [ -s /tmp/lastip.${interface} ]; then
+      OLDIP=$(cat /tmp/lastip.${interface})
+      if [ "${OLDIP}" != "${ip}" ]; then
+        /sbin/reboot
+      fi
+    fi
+    echo "${ip}" > /tmp/lastip.${interface}
     ;;
   renew)
     ;;
