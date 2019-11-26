@@ -52,8 +52,20 @@ up()
       # port:protocol
       port=${map%%:*}
       protocol=${map#*:}
-      upnpc -e ${HOSTNAME} -m ${IFACE} -a ${IP} ${port} ${port} ${protocol} ${TTL}
+      upnpc -e ${HOSTNAME} -m ${IFACE} -n ${IP} ${port} ${port} ${protocol} ${TTL}
       echo "MINKE:NAT:UP ${IP} ${port} ${protocol} ${TTL}"
+    done
+  fi
+}
+
+reup()
+{
+  if [ "${ENABLE_NAT}" != "" ]; then
+    for map in ${ENABLE_NAT}; do
+      # port:protocol
+      port=${map%%:*}
+      protocol=${map#*:}
+      upnpc -e ${HOSTNAME} -m ${IFACE} -n ${IP} ${port} ${port} ${protocol} ${TTL}
     done
   fi
 }
@@ -86,7 +98,7 @@ if [ "${ENABLE_NAT}" != "" ]; then
   while true; do
     sleep ${TTL2} &
     wait "$!"
-    up
+    reup
   done
 else
   sleep 2147483647d &
