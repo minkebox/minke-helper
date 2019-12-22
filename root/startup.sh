@@ -1,17 +1,24 @@
 #! /bin/sh
 
+TTL=3600 # 1 hour
+TTL2=1800 # TTL/2
+
+if [ "${__HOME_INTERFACE}" != "" ]; then
+  while ! ifconfig ${__HOME_INTERFACE} > /dev/null 2>&1 ; do
+    sleep 1;
+  done
+fi
+if [ "${__PRIVATE_INTERFACE}" != "" ]; then
+  while ! ifconfig ${__PRIVATE_INTERFACE} > /dev/null 2>&1 ; do
+    sleep 1;
+  done
+fi
+
 if [ "${__HOME_INTERFACE}" != "" ]; then
   IFACE=${__HOME_INTERFACE}
 elif [ "${__PRIVATE_INTERFACE}" != "" ]; then
   IFACE=${__PRIVATE_INTERFACE}
 fi
-
-TTL=3600 # 1 hour
-TTL2=1800 # TTL/2
-
-while ! ifconfig ${IFACE} > /dev/null 2>&1 ; do 
-  sleep 1;
-done
 
 if [ "${ENABLE_DHCP}" != "" ]; then
   udhcpc -i ${IFACE} -s /etc/udhcpc.script -F ${HOSTNAME} -x hostname:${HOSTNAME} -C -x 61:"'${HOSTNAME}'"
@@ -19,10 +26,14 @@ if [ "${ENABLE_DHCP}" != "" ]; then
 fi
 
 IP=$(ip addr show dev ${IFACE} | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -1)
-if [ "${__HOME_INTERFACE}" != "" ]; then
+if [ "${IFACE}" = "${__HOME_INTERFACE}" ]; then
   echo "MINKE:HOME:IP ${IP}"
-elif [ "${__PRIVATE_INTERFACE}" != "" ]; then
+elif [ "${IFACE}" = "${__PRIVATE_INTERFACE}" ]; then
   echo "MINKE:PRIVATE:IP ${IP}"
+fi
+
+if [ "${__PRIVATE_INTERFACE}" != "" -a "${__PRIVATE_INTERFACE_IP}" != "" ]; then
+  ip addr add ${__PRIVATE_INTERFACE_IP} dev ${__PRIVATE_INTERFACE}
 fi
 
 if [ "${__GATEWAY}" != "" ]; then
