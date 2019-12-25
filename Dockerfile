@@ -4,4 +4,6 @@ RUN apk add miniupnpc
 
 COPY root/ /
 
-ENTRYPOINT ["/startup.sh"] 
+HEALTHCHECK --interval=30s --timeout=5s CMD /health.sh
+
+ENTRYPOINT ["/startup.sh"]
