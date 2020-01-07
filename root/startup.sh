@@ -64,6 +64,9 @@ up()
       port=${map%%:*}
       protocol=${map#*:}
       upnpc -e ${HOSTNAME} -m ${IFACE} -n ${IP} ${port} ${port} ${protocol} ${TTL}
+      if [ "${IP6}" != "" ]; then
+        upnpc -e ${HOSTNAME}_6 -m ${IFACE} -6 -A "" 0 ${IP6} ${port} ${protocol} ${TTL}
+      fi
       echo "MINKE:NAT:UP ${IP} ${port} ${protocol} ${TTL}"
     done
   fi
@@ -77,6 +80,9 @@ reup()
       port=${map%%:*}
       protocol=${map#*:}
       upnpc -e ${HOSTNAME} -m ${IFACE} -n ${IP} ${port} ${port} ${protocol} ${TTL}
+      if [ "${IP6}" != "" ]; then
+        upnpc -e ${HOSTNAME}_6 -m ${IFACE} -6 -A "" 0 ${IP6} ${port} ${protocol} ${TTL}
+      fi
     done
   fi
 }
