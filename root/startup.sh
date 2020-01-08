@@ -31,6 +31,7 @@ if [ "${IFACE}" = "${__HOME_INTERFACE}" ]; then
 elif [ "${IFACE}" = "${__PRIVATE_INTERFACE}" ]; then
   echo "MINKE:PRIVATE:IP ${IP}"
 fi
+IP6=${__HOSTIP6}
 
 if [ "${__PRIVATE_INTERFACE}" != "" -a "${__PRIVATE_INTERFACE_IP}" != "" ]; then
   ip addr add ${__PRIVATE_INTERFACE_IP} dev ${__PRIVATE_INTERFACE}
