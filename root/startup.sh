@@ -41,6 +41,10 @@ if [ "${__GATEWAY}" != "" ]; then
   route add -net default gw ${__GATEWAY}
 fi
 
+if [ "${__HOSTIP}" != "" ]; then
+  ping -c 5 -w 5 -q ${__HOSTIP} &
+fi
+
 echo "127.0.0.1 localhost
 ::1	localhost ip6-localhost ip6-loopback
 fe00::0	ip6-localnet
