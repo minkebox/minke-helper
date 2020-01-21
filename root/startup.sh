@@ -68,9 +68,9 @@ up()
       # port:protocol
       port=${map%%:*}
       protocol=${map#*:}
-      upnpc -e ${HOSTNAME} -m ${IFACE} -n ${IP} ${port} ${port} ${protocol} ${TTL}
+      upnpc -u ${__UPNPURL} -e ${HOSTNAME} -m ${IFACE} -n ${IP} ${port} ${port} ${protocol} ${TTL}
       if [ "${IP6}" != "" ]; then
-        upnpc -e ${HOSTNAME}_6 -m ${IFACE} -6 -A "" 0 ${IP6} ${port} ${protocol} ${TTL}
+        upnpc -u ${__UPNPURL} -e ${HOSTNAME}_6 -m ${IFACE} -6 -A "" 0 ${IP6} ${port} ${protocol} ${TTL}
       fi
       echo "MINKE:NAT:UP ${IP} ${port} ${protocol} ${TTL}"
     done
@@ -84,9 +84,9 @@ reup()
       # port:protocol
       port=${map%%:*}
       protocol=${map#*:}
-      upnpc -e ${HOSTNAME} -m ${IFACE} -n ${IP} ${port} ${port} ${protocol} ${TTL}
+      upnpc -u ${__UPNPURL} -e ${HOSTNAME} -m ${IFACE} -n ${IP} ${port} ${port} ${protocol} ${TTL}
       if [ "${IP6}" != "" ]; then
-        upnpc -e ${HOSTNAME}_6 -m ${IFACE} -6 -A "" 0 ${IP6} ${port} ${protocol} ${TTL}
+        upnpc -u ${__UPNPURL} -e ${HOSTNAME}_6 -m ${IFACE} -6 -A "" 0 ${IP6} ${port} ${protocol} ${TTL}
       fi
     done
   fi
@@ -99,7 +99,7 @@ down()
       # port:protocol
       port=${map%%:*}
       protocol=${map#*:}
-      upnpc -m ${IFACE} -d ${port} ${protocol}
+      upnpc -u ${__UPNPURL} -m ${IFACE} -d ${port} ${protocol}
       echo "MINKE:NAT:DOWN ${IP} ${port} ${protocol}"
     done
   fi
