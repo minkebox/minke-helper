@@ -33,8 +33,6 @@ elif [ "${IFACE}" = "${__PRIVATE_INTERFACE}" ]; then
 fi
 IP6=${__HOSTIP6}
 
-ip route add ${IP}/32 dev ${IFACE} metric 20
-
 if [ "${__PRIVATE_INTERFACE}" != "" -a "${__PRIVATE_INTERFACE_IP}" != "" ]; then
   ip addr add ${__PRIVATE_INTERFACE_IP} dev ${__PRIVATE_INTERFACE}
 fi
@@ -101,7 +99,6 @@ down()
       echo "MINKE:NAT:DOWN ${IP} ${port} ${protocol}"
     done
   fi
-  ip route del ${IP}/32 dev ${IFACE}
   if [ "${ENABLE_DHCP}" != "" ]; then
     killall udhcpc
     echo "MINKE:DHCP:DOWN ${IFACE} ${IP}"
