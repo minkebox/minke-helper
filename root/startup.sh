@@ -21,7 +21,7 @@ elif [ "${__PRIVATE_INTERFACE}" != "" ]; then
 fi
 
 if [ "${ENABLE_DHCP}" != "" ]; then
-  udhcpc -i ${IFACE} -B -s /etc/udhcpc.script -F ${HOSTNAME} -x hostname:${HOSTNAME} -C -x 61:"'${HOSTNAME}'"
+  udhcpc -i ${IFACE} -s /etc/udhcpc.script -F ${HOSTNAME} -x hostname:${HOSTNAME} -C -x 61:"'${HOSTNAME}'"
   echo "MINKE:DHCP:UP ${IFACE}"
 fi
 
