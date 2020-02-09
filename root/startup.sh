@@ -68,12 +68,6 @@ echo "search ${__DOMAINNAME}. local.
 nameserver ${__DNSSERVER}
 options ndots:1 timeout:1 attempts:1 ndots:0" > /etc/resolv.conf
 
-if [ "${__UPNPURL}" != "" ]; then
-  UPNPRUL="-u ${__UPNPURL}"
-else
-  UPNPURL=""
-fi
-
 up()
 {
   if [ "${ENABLE_NAT}" != "" ]; then
@@ -81,9 +75,9 @@ up()
       # port:protocol
       port=${map%%:*}
       protocol=${map#*:}
-      upnpc ${UPNPURL} -e ${HOSTNAME} -m ${PRIMARY_INTERFACE} -n ${PRIMARY_IP} ${port} ${port} ${protocol} ${TTL}
+      upnpc -e ${HOSTNAME} -m ${PRIMARY_INTERFACE} -n ${PRIMARY_IP} ${port} ${port} ${protocol} ${TTL}
       if [ "${PRIMARY_IP6}" != "" ]; then
-        upnpc ${UPNPURL} -e ${HOSTNAME}_6 -m ${PRIMARY_INTERFACE} -6 -A "" 0 ${PRIMARY_IP6} ${port} ${protocol} ${TTL}
+        upnpc -e ${HOSTNAME}_6 -m ${PRIMARY_INTERFACE} -6 -A "" 0 ${PRIMARY_IP6} ${port} ${protocol} ${TTL}
       fi
       echo "MINKE:NAT:UP ${PRIMARY_IP} ${port} ${protocol} ${TTL}"
     done
@@ -97,9 +91,9 @@ reup()
       # port:protocol
       port=${map%%:*}
       protocol=${map#*:}
-      upnpc ${UPNPURL} -e ${HOSTNAME} -m ${PRIMARY_INTERFACE} -n ${PRIMARY_IP} ${port} ${port} ${protocol} ${TTL}
+      upnpc -e ${HOSTNAME} -m ${PRIMARY_INTERFACE} -n ${PRIMARY_IP} ${port} ${port} ${protocol} ${TTL}
       if [ "${PRIMARY_IP6}" != "" ]; then
-        upnpc ${UPNPURL} -e ${HOSTNAME}_6 -m ${PRIMARY_INTERFACE} -6 -A "" 0 ${PRIMARY_IP6} ${port} ${protocol} ${TTL}
+        upnpc -e ${HOSTNAME}_6 -m ${PRIMARY_INTERFACE} -6 -A "" 0 ${PRIMARY_IP6} ${port} ${protocol} ${TTL}
       fi
     done
   fi
@@ -112,7 +106,7 @@ down()
       # port:protocol
       port=${map%%:*}
       protocol=${map#*:}
-      upnpc ${UPNPURL} -m ${PRIMARY_INTERFACE} -d ${port} ${protocol}
+      upnpc -m ${PRIMARY_INTERFACE} -d ${port} ${protocol}
       echo "MINKE:NAT:DOWN ${PRIMARY_IP} ${port} ${protocol}"
     done
   fi
