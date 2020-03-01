@@ -1,5 +1,6 @@
 #! /bin/sh
 
+RETRY=10 # 10 seconds
 TTL=3600 # 1 hour
 TTL2=1800 # TTL/2
 
@@ -68,25 +69,9 @@ echo "search ${__DOMAINNAME}. local.
 nameserver ${__DNSSERVER}
 options ndots:1 timeout:1 attempts:1 ndots:0" > /etc/resolv.conf
 
-up()
+natup()
 {
-  if [ "${ENABLE_NAT}" != "" ]; then
-    for map in ${ENABLE_NAT}; do
-      # port:protocol
-      port=${map%%:*}
-      protocol=${map#*:}
-      upnpc -e ${HOSTNAME} -m ${PRIMARY_INTERFACE} -n ${PRIMARY_IP} ${port} ${port} ${protocol} ${TTL}
-      if [ "${PRIMARY_IP6}" != "" ]; then
-        upnpc -e ${HOSTNAME}_6 -m ${PRIMARY_INTERFACE} -6 -A "" 0 ${PRIMARY_IP6} ${port} ${protocol} ${TTL}
-      fi
-      echo "MINKE:NAT:UP ${PRIMARY_IP} ${port} ${protocol} ${TTL}"
-    done
-  fi
-}
-
-reup()
-{
-  if [ "${ENABLE_NAT}" != "" ]; then
+  while true; do
     for map in ${ENABLE_NAT}; do
       # port:protocol
       port=${map%%:*}
@@ -96,40 +81,39 @@ reup()
         upnpc -e ${HOSTNAME}_6 -m ${PRIMARY_INTERFACE} -6 -A "" 0 ${PRIMARY_IP6} ${port} ${protocol} ${TTL}
       fi
     done
-  fi
+    sleep ${TTL2} &
+    wait "$!"
+  done
 }
 
-down()
+remoteip()
 {
-  if [ "${ENABLE_NAT}" != "" ]; then
-    for map in ${ENABLE_NAT}; do
-      # port:protocol
-      port=${map%%:*}
-      protocol=${map#*:}
-      upnpc -m ${PRIMARY_INTERFACE} -d ${port} ${protocol}
-      echo "MINKE:NAT:DOWN ${PRIMARY_IP} ${port} ${protocol}"
-    done
-  fi
-  if [ "${__HOME_INTERFACE}" != "" -a "${ENABLE_DHCP}" != "" ]; then
-    killall udhcpc
-    echo "MINKE:DHCP:DOWN ${__HOME_INTERFACE} ${HIP}"
-  fi
-  echo "MINKE:DOWN"
+  while true; do
+    timeout=${RETRY}
+    iface_default_up=$(route | grep default | head -1 | grep ${FETCH_REMOTE_IP})
+    if [ "${iface_default_up}" != "" ]; then
+      remote_ip=$(wget -q -T 5 -O - http://api.ipify.org)
+      if [ "${remote_ip}" != "" ]; then
+        echo "MINKE:REMOTE:IP ${remote_ip}"
+        timeout=${TTL2}
+      fi
+    fi
+    sleep ${timeout} &
+    wait "$!"
+  done
 }
 
-trap "down; killall sleep; exit" TERM INT
+trap "killall sleep upnpc wget; exit" TERM INT
 
-up
+if [ "${ENABLE_NAT}" != "" ]; then
+  natup &
+fi
+
+if [ "${FETCH_REMOTE_IP}" != "" ]; then
+  remoteip &
+fi
 
 echo "MINKE:UP"
 
-if [ "${ENABLE_NAT}" != "" ]; then
-  while true; do
-    sleep ${TTL2} &
-    wait "$!"
-    reup
-  done
-else
-  sleep 2147483647d &
-  wait "$!"
-fi
+sleep 2147483647d &
+wait "$!"
