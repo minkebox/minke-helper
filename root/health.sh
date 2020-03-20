@@ -1,6 +1,6 @@
 #! /bin/sh
 
-if [ "${ENABLE_DHCP}" != "" -a "$(pidof udhcpc)" = "" ]; then
+if [ "${__DHCP_INTERFACE}" != "" -a "$(pidof udhcpc)" = "" ]; then
   exit 1
 fi
 

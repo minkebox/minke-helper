@@ -5,113 +5,99 @@ TTL=3600 # 1 hour
 TTL2=1800 # TTL/2
 
 # Wait for interfaces to become ready
-if [ "${__HOME_INTERFACE}" != "" ]; then
-  while ! ifconfig ${__HOME_INTERFACE} > /dev/null 2>&1 ; do
+for iface in ${__DEFAULT_INTERFACE} ${__DHCP_INTERFACE} ${__NAT_INTERFACE} ${__INTERNAL_INTERFACE}; do
+  while ! ifconfig ${iface} > /dev/null 2>&1 ; do
     sleep 1;
   done
-fi
-if [ "${__PRIVATE_INTERFACE}" != "" ]; then
-  while ! ifconfig ${__PRIVATE_INTERFACE} > /dev/null 2>&1 ; do
-    sleep 1;
-  done
-fi
+done
 
 # Allocate an IP to the home interface via DHCP
-if [ "${__HOME_INTERFACE}" != "" -a "${ENABLE_DHCP}" != "" ]; then
-  udhcpc -i ${__HOME_INTERFACE} -s /etc/udhcpc.script -F ${HOSTNAME} -x hostname:${HOSTNAME} -C -x 61:"'${HOSTNAME}'"
-  echo "MINKE:DHCP:UP ${__HOME_INTERFACE}"
+if [ "${__DHCP_INTERFACE}" != "" ]; then
+  udhcpc -i ${__DHCP_INTERFACE} -s /etc/udhcpc.script -F ${HOSTNAME} -x hostname:${HOSTNAME} -C -x 61:"'${HOSTNAME}'"
+  ip=$(ip addr show dev ${__DHCP_INTERFACE} | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -1)
+  echo "MINKE:DHCP:IP ${ip}"
+  echo "MINKE:DHCP:UP ${__DHCP_INTERFACE}"
 fi
 
-# Set the private interface by hand (it probably already has this address)
-if [ "${__PRIVATE_INTERFACE}" != "" -a "${__PRIVATE_INTERFACE_IP}" != "" ]; then
-  ip addr add ${__PRIVATE_INTERFACE_IP} dev ${__PRIVATE_INTERFACE}
+# Report the default interface IP (may match the DHCP ip)
+if [ "${__DEFAULT_INTERFACE}" != "" ]; then
+  DEFAULT_IP=$(ip addr show dev ${__DEFAULT_INTERFACE} | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -1)
+  echo "MINKE:DEFAULT:IP ${DEFAULT_IP}"
 fi
 
-# Report the allocated addresses back to the system
-if [ "${__PRIVATE_INTERFACE}" != "" ]; then
-  PIP=$(ip addr show dev ${__PRIVATE_INTERFACE} | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -1)
-  echo "MINKE:PRIVATE:IP ${PIP}"
-fi
-if [ "${__HOME_INTERFACE}" != "" ]; then
-  HIP=$(ip addr show dev ${__HOME_INTERFACE} | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -1)
-  echo "MINKE:HOME:IP ${HIP}"
-fi
-
-# The primary interface is eth0. It may be the home network or the private network depending on how
-# the app is configured. We open any NAT ports on the primary interface.
-PRIMARY_INTERFACE=eth0
-if [ "${__HOME_INTERFACE}" = "${PRIMARY_INTERFACE}" ]; then
-  PRIMARY_IP=${HIP}
-elif [ "${__PRIVATE_INTERFACE}" = "${PRIMARY_INTERFACE}" ]; then
-  PRIMARY_IP=${PIP}
-else
-  PRIMARY_IP="127.0.0.1"
-fi
-PRIMARY_IP6=${__HOSTIP6}
-
-if [ "${__GATEWAY}" != "" ]; then
-  route add -net default gw ${__GATEWAY}
-fi
+# Default gateway
+ip route add 0.0.0.0/1 dev ${__DEFAULT_INTERFACE}
+ip route add 128.0.0.0/1 dev ${__DEFAULT_INTERFACE}
 
 echo "127.0.0.1 localhost
 ::1	localhost ip6-localhost ip6-loopback
 fe00::0	ip6-localnet
 ff00::0	ip6-mcastprefix
 ff02::1	ip6-allnodes
-ff02::2	ip6-allrouters
-${PRIMARY_IP} $(hostname)
-${__DNSSERVER} dns-server" > /etc/hosts
-if [ "${__GATEWAY}" != "" ]; then
-  echo "${__GATEWAY} services" >> /etc/hosts
+ff02::2	ip6-allrouters" > /etc/hosts
+if [ "${DEFAULT_IP}" != "" ]; then
+  echo "${DEFAULT_IP} $(hostname)" >> /etc/hosts
 fi
+if [ "${__GATEWAY}" != "" ]; then
+  echo "${__GATEWAY} minkebox" >> /etc/hosts
+fi
+echo "${__DNSSERVER} dns-server" >> /etc/hosts
 
 echo "search ${__DOMAINNAME}. local.
 nameserver ${__DNSSERVER}
 options ndots:1 timeout:1 attempts:1 ndots:0" > /etc/resolv.conf
 
-natup()
-{
-  while true; do
-    for map in ${ENABLE_NAT}; do
-      # port:protocol
-      port=${map%%:*}
-      protocol=${map#*:}
-      upnpc -e ${HOSTNAME} -m ${PRIMARY_INTERFACE} -n ${PRIMARY_IP} ${port} ${port} ${protocol} ${TTL}
-      if [ "${PRIMARY_IP6}" != "" ]; then
-        upnpc -e ${HOSTNAME}_6 -m ${PRIMARY_INTERFACE} -6 -A "" 0 ${PRIMARY_IP6} ${port} ${protocol} ${TTL}
-      fi
+# We open any NAT ports.
+if [ "${__NAT_INTERFACE}" != "" -a "${ENABLE_NAT}" != "" ]; then
+
+  NAT_IP=$(ip addr show dev ${__NAT_INTERFACE} | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -1)
+  if [ "${__DHCP_INTERFACE}" = "${__NAT_INTERFACE}" ]; then
+    NAT_IP6=${__HOSTIP6}
+  fi
+
+  natup()
+  {
+    while true; do
+      for map in ${ENABLE_NAT}; do
+        # port:protocol
+        port=${map%%:*}
+        protocol=${map#*:}
+        upnpc -e ${HOSTNAME} -m ${__NAT_INTERFACE} -n ${NAT_IP} ${port} ${port} ${protocol} ${TTL}
+        if [ "${NAT_IP6}" != "" ]; then
+          upnpc -e ${HOSTNAME}_6 -m ${__NAT_INTERFACE} -6 -A "" 0 ${NAT_IP6} ${port} ${protocol} ${TTL}
+        fi
+      done
+      sleep ${TTL2} &
+      wait "$!"
     done
-    sleep ${TTL2} &
-    wait "$!"
-  done
-}
-
-remoteip()
-{
-  while true; do
-    timeout=${RETRY}
-    iface_default_up=$(route | grep default | head -1 | grep ${FETCH_REMOTE_IP})
-    if [ "${iface_default_up}" != "" ]; then
-      remote_ip=$(wget -q -T 5 -O - http://api.ipify.org)
-      if [ "${remote_ip}" != "" ]; then
-        echo "MINKE:REMOTE:IP ${remote_ip}"
-        timeout=${TTL2}
-      fi
-    fi
-    sleep ${timeout} &
-    wait "$!"
-  done
-}
-
-trap "killall sleep upnpc wget; exit" TERM INT
-
-if [ "${ENABLE_NAT}" != "" ]; then
+  }
   natup &
+
 fi
 
 if [ "${FETCH_REMOTE_IP}" != "" ]; then
+
+  remoteip()
+  {
+    while true; do
+      timeout=${RETRY}
+      iface_default_up=$(route | grep default | head -1 | grep ${FETCH_REMOTE_IP})
+      if [ "${iface_default_up}" != "" ]; then
+        remote_ip=$(wget -q -T 5 -O - http://api.ipify.org)
+        if [ "${remote_ip}" != "" ]; then
+          echo "MINKE:REMOTE:IP ${remote_ip}"
+          timeout=${TTL2}
+        fi
+      fi
+      sleep ${timeout} &
+      wait "$!"
+    done
+  }
   remoteip &
+
 fi
+
+trap "killall sleep upnpc wget; exit" TERM INT
 
 echo "MINKE:UP"
 
