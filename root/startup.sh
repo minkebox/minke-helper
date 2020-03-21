@@ -5,7 +5,7 @@ TTL=3600 # 1 hour
 TTL2=1800 # TTL/2
 
 # Wait for interfaces to become ready
-for iface in ${__DEFAULT_INTERFACE} ${__DHCP_INTERFACE} ${__NAT_INTERFACE} ${__INTERNAL_INTERFACE}; do
+for iface in ${__DEFAULT_INTERFACE} ${__DHCP_INTERFACE} ${__NAT_INTERFACE} ${__INTERNAL_INTERFACE} ${__SECONDARY_INTERFACE}; do
   while ! ifconfig ${iface} > /dev/null 2>&1 ; do
     sleep 1;
   done
