@@ -83,13 +83,10 @@ if [ "${FETCH_REMOTE_IP}" != "" ]; then
   {
     while true; do
       timeout=${RETRY}
-      iface_default_up=$(route | grep default | head -1 | grep ${FETCH_REMOTE_IP})
-      if [ "${iface_default_up}" != "" ]; then
-        remote_ip=$(wget -q -T 5 -O - http://api.ipify.org)
-        if [ "${remote_ip}" != "" ]; then
-          echo "MINKE:REMOTE:IP ${remote_ip}"
-          timeout=${TTL2}
-        fi
+      remote_ip=$(wget -q -T 5 -O - http://api.ipify.org)
+      if [ "${remote_ip}" != "" ]; then
+        echo "MINKE:REMOTE:IP ${remote_ip}"
+        timeout=${TTL2}
       fi
       sleep ${timeout} &
       wait "$!"
