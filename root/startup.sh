@@ -1,5 +1,6 @@
 #! /bin/sh
 
+ACTIVE=true
 RETRY=10 # 10 seconds
 TTL=3600 # 1 hour
 TTL2=1800 # TTL/2
@@ -57,20 +58,31 @@ if [ "${__NAT_INTERFACE}" != "" -a "${ENABLE_NAT}" != "" ]; then
     NAT_IP6=${__HOSTIP6}
   fi
 
+  # We dont use the NAT_INTERFACE when forwarding ports because in some circumstances the relevant interface
+  # is changed by the app (e.g. VPN's might setup a bridge). Just let upnpc work it out.
   natup()
   {
-    while true; do
+    while ${ACTIVE}; do
       for map in ${ENABLE_NAT}; do
         # port:protocol
         port=${map%%:*}
         protocol=${map#*:}
-        upnpc -e ${HOSTNAME} -m ${__NAT_INTERFACE} -n ${NAT_IP} ${port} ${port} ${protocol} ${TTL}
+        upnpc -e ${HOSTNAME} -n ${NAT_IP} ${port} ${port} ${protocol} ${TTL}
         if [ "${NAT_IP6}" != "" ]; then
-          upnpc -e ${HOSTNAME}_6 -m ${__NAT_INTERFACE} -6 -A "" 0 ${NAT_IP6} ${port} ${protocol} ${TTL}
+          upnpc -e ${HOSTNAME}_6 -6 -A "" 0 ${NAT_IP6} ${port} ${protocol} ${TTL}
         fi
       done
       sleep ${TTL2} &
       wait "$!"
+    done
+    for map in ${ENABLE_NAT}; do
+      # port:protocol
+      port=${map%%:*}
+      protocol=${map#*:}
+      upnpc -d ${port} ${protocol}
+      if [ "${NAT_IP6}" != "" ]; then
+        upnpc -6 -d ${port} ${protocol}
+      fi
     done
   }
   natup &
@@ -81,7 +93,7 @@ if [ "${FETCH_REMOTE_IP}" != "" ]; then
 
   remoteip()
   {
-    while true; do
+    while ${ACTIVE}; do
       timeout=${RETRY}
       remote_ip=$(wget -q -T 5 -O - http://api.ipify.org)
       if [ "${remote_ip}" != "" ]; then
@@ -96,7 +108,7 @@ if [ "${FETCH_REMOTE_IP}" != "" ]; then
 
 fi
 
-trap "killall sleep upnpc wget; exit" TERM INT
+trap "ACTIVE=false; killall sleep;" TERM INT
 
 echo "MINKE:UP"
 
