@@ -42,9 +42,9 @@ if [ "${DEFAULT_IP}" != "" ]; then
   echo "${DEFAULT_IP} $(hostname)" >> /etc/hosts
 fi
 if [ "${__GATEWAY}" != "" ]; then
-  echo "${__GATEWAY} minkebox" >> /etc/hosts
+  echo "${__GATEWAY} ${__MINKENAME}-gateway" >> /etc/hosts
 fi
-echo "${__DNSSERVER} minkebox" >> /etc/hosts
+echo "${__DNSSERVER} ${__MINKENAME}" >> /etc/hosts
 
 echo "search ${__DOMAINNAME}. local.
 nameserver ${__DNSSERVER}
