@@ -26,6 +26,12 @@ if [ "${__DEFAULT_INTERFACE}" != "" ]; then
   echo "MINKE:DEFAULT:IP ${DEFAULT_IP}"
 fi
 
+# Report the secondary interface IP (may match the DHCP ip)
+if [ "${__SECONDARY_INTERFACE}" != "" ]; then
+  SECONDARY_IP=$(ip addr show dev ${__SECONDARY_INTERFACE} | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -1)
+  echo "MINKE:SECONDARY:IP ${SECONDARY_IP}"
+fi
+
 # Default gateway
 if [ "${__GATEWAY}" != "" ]; then
   ip route add 0.0.0.0/1 via ${__GATEWAY}
