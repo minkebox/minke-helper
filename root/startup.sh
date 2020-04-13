@@ -54,7 +54,7 @@ echo "${__DNSSERVER} ${__MINKENAME}" >> /etc/hosts
 
 echo "search ${__DOMAINNAME} local
 nameserver ${__DNSSERVER}
-options ndots:1 timeout:1 attempts:1" > /etc/resolv.conf
+options ndots:1 timeout:2 attempts:1" > /etc/resolv.conf
 
 # We open any NAT ports.
 if [ "${__NAT_INTERFACE}" != "" -a "${ENABLE_NAT}" != "" ]; then
