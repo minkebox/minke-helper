@@ -52,9 +52,9 @@ if [ "${__GATEWAY}" != "" ]; then
 fi
 echo "${__DNSSERVER} ${__MINKENAME}" >> /etc/hosts
 
-echo "search ${__DOMAINNAME}. local.
+echo "search ${__DOMAINNAME} local
 nameserver ${__DNSSERVER}
-options ndots:1 timeout:1 attempts:1 ndots:0" > /etc/resolv.conf
+options ndots:1 timeout:1 attempts:1" > /etc/resolv.conf
 
 # We open any NAT ports.
 if [ "${__NAT_INTERFACE}" != "" -a "${ENABLE_NAT}" != "" ]; then
