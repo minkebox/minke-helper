@@ -38,23 +38,21 @@ if [ "${__GATEWAY}" != "" ]; then
   ip route add 128.0.0.0/1 via ${__GATEWAY}
 fi
 
-echo "127.0.0.1 localhost
-::1	localhost ip6-localhost ip6-loopback
-fe00::0	ip6-localnet
-ff00::0	ip6-mcastprefix
-ff02::1	ip6-allnodes
-ff02::2	ip6-allrouters" > /etc/hosts
+cp /etc/hosts /etc/hosts.orig
 if [ "${DEFAULT_IP}" != "" ]; then
+  awk "!/$(hostname)/ || /127.0.0.1/" /etc/hosts.orig > /etc/hosts
   echo "${DEFAULT_IP} $(hostname)" >> /etc/hosts
+else
+  cat /etc/hosts.orig > /etc/hosts
 fi
 if [ "${__GATEWAY}" != "" ]; then
   echo "${__GATEWAY} ${__MINKENAME}-gateway" >> /etc/hosts
 fi
 echo "${__DNSSERVER} ${__MINKENAME}" >> /etc/hosts
 
-echo "search ${__DOMAINNAME}. local.
+echo "search ${__DOMAINNAME} local
 nameserver ${__DNSSERVER}
-options ndots:1 timeout:1 attempts:1 ndots:0" > /etc/resolv.conf
+options ndots:1 timeout:2 attempts:1" > /etc/resolv.conf
 
 # We open any NAT ports.
 if [ "${__NAT_INTERFACE}" != "" -a "${ENABLE_NAT}" != "" ]; then
