@@ -6,7 +6,7 @@ TTL=3600 # 1 hour
 TTL2=1800 # TTL/2
 
 # Wait for interfaces to become ready
-for iface in ${__DEFAULT_INTERFACE} ${__DHCP_INTERFACE} ${__NAT_INTERFACE} ${__INTERNAL_INTERFACE} ${__SECONDARY_INTERFACE} ${__DNS_INTERFACE}; do
+for iface in ${__DEFAULT_INTERFACE} ${__DHCP_INTERFACE} ${__NAT_INTERFACE} ${__INTERNAL_INTERFACE} ${__SECONDARY_INTERFACE} ${__DNS_INTERFACE} ${__SHAPED_INTERFACE}; do
   while ! ifconfig ${iface} > /dev/null 2>&1 ; do
     sleep 1;
   done
@@ -67,6 +67,14 @@ if [ "${NR_IFACES}" = "1" ]; then
 fi
 # Applications which want to monitor traffic over multiple networks are more problematic as we don't know
 # what is tx or rx traffic. Let them setup the specifics themselves
+
+# Bandwidth control
+if [ "${__DEFAULT_INTERFACE_BANDWIDTH}" != "" ]; then
+  /wondershaper.sh -a ${__DEFAULT_INTERFACE} -u ${__DEFAULT_INTERFACE_BANDWIDTH} -d ${__DEFAULT_INTERFACE_BANDWIDTH}
+fi
+if [ "${__SECONDARY_INTERFACE_BANDWIDTH}" != "" ]; then
+  /wondershaper.sh -a ${__SECONDARY_INTERFACE} -u ${__SECONDARY_INTERFACE_BANDWIDTH} -d ${__SECONDARY_INTERFACE_BANDWIDTH}
+fi
 
 # We open any NAT ports.
 if [ "${__NAT_INTERFACE}" != "" -a "${ENABLE_NAT}" != "" ]; then

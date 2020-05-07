@@ -1,6 +1,6 @@
 FROM alpine:latest
 
-RUN apk add miniupnpc iptables
+RUN apk add bash miniupnpc iptables iproute2
 
 COPY root/ /
 
