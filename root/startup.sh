@@ -68,6 +68,14 @@ fi
 # Applications which want to monitor traffic over multiple networks are more problematic as we don't know
 # what is tx or rx traffic. Let them setup the specifics themselves
 
+# Bandwidth control
+if [ "${__DEFAULT_INTERFACE_BANDWIDTH}" != "" ]; then
+  /wondershaper.sh -a ${__DEFAULT_INTERFACE} -u ${__DEFAULT_INTERFACE_BANDWIDTH} -d ${__DEFAULT_INTERFACE_BANDWIDTH}
+fi
+if [ "${__SECONDARY_INTERFACE_BANDWIDTH}" != "" ]; then
+  /wondershaper.sh -a ${__SECONDARY_INTERFACE} -u ${__SECONDARY_INTERFACE_BANDWIDTH} -d ${__SECONDARY_INTERFACE_BANDWIDTH}
+fi
+
 # We open any NAT ports.
 if [ "${__NAT_INTERFACE}" != "" -a "${ENABLE_NAT}" != "" ]; then
 
