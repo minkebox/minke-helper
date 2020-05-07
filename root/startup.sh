@@ -11,6 +11,7 @@ for iface in ${__DEFAULT_INTERFACE} ${__DHCP_INTERFACE} ${__NAT_INTERFACE} ${__I
     sleep 1;
   done
 done
+NR_IFACES=$(ls -1d /sys/class/net/eth* | wc -l)
 
 # Allocate an IP to the home interface via DHCP
 if [ "${__DHCP_INTERFACE}" != "" ]; then
@@ -53,6 +54,19 @@ echo "${__DNSSERVER} ${__MINKENAME}" >> /etc/hosts
 echo "search ${__DOMAINNAME} local
 nameserver ${__DNSSERVER}
 options ndots:1 timeout:2 attempts:1" > /etc/resolv.conf
+
+# Network monitoring
+/sbin/iptables -N RX
+/sbin/iptables -N TX
+/sbin/iptables -I RX
+/sbin/iptables -I TX
+# Single interface
+if [ "${NR_IFACES}" = "1" ]; then
+  /sbin/iptables -I OUTPUT -j TX
+  /sbin/iptables -I INPUT -j RX
+fi
+# Applications which want to monitor traffic over multiple networks are more problematic as we don't know
+# what is tx or rx traffic. Let them setup the specifics themselves
 
 # We open any NAT ports.
 if [ "${__NAT_INTERFACE}" != "" -a "${ENABLE_NAT}" != "" ]; then
