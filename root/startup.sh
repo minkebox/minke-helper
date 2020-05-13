@@ -15,7 +15,12 @@ NR_IFACES=$(ls -1d /sys/class/net/eth* | wc -l)
 
 # Allocate an IP to the home interface via DHCP
 if [ "${__DHCP_INTERFACE}" != "" ]; then
-  udhcpc -i ${__DHCP_INTERFACE} -s /etc/udhcpc.script -F ${HOSTNAME} -x hostname:${HOSTNAME} -C -x 61:"'${HOSTNAME}'"
+  # Reset mac addess is nececessary. We may need to do this is the interface is secondary.
+  if [ "${__DHCP_INTERFACE_MAC}" != "" ]; then
+    ip link set dev ${__DHCP_INTERFACE} address ${__DHCP_INTERFACE_MAC}
+  fi
+  #udhcpc -i ${__DHCP_INTERFACE} -s /etc/udhcpc.script -F ${HOSTNAME} -x hostname:${HOSTNAME} -C -x 61:"'${HOSTNAME}'"
+  udhcpc -i ${__DHCP_INTERFACE} -s /etc/udhcpc.script -F ${HOSTNAME} -x hostname:${HOSTNAME}
   ip=$(ip addr show dev ${__DHCP_INTERFACE} | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -1)
   echo "MINKE:DHCP:IP ${ip}"
   echo "MINKE:DHCP:UP ${__DHCP_INTERFACE}"
