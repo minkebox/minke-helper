@@ -85,7 +85,7 @@ fi
 if [ "${__DEFAULT_INTERFACE}" != "" ]; then
   flags="/sys/class/net/${__DEFAULT_INTERFACE}/flags"
   echo "MINKE:DEFAULT:FLAGS $(cat ${flags})"
-  (inotifywait --quiet --monitor ${flags} --event modify | while read event; do
+  (ip monitor link dev ${__DEFAULT_INTERFACE} | while read line; do
     echo "MINKE:DEFAULT:FLAGS $(cat ${flags})"
   done) &
 fi
@@ -148,7 +148,7 @@ if [ "${FETCH_REMOTE_IP}" != "" ]; then
 
 fi
 
-trap "ACTIVE=false; killall inotifywait sleep;" TERM INT
+trap "ACTIVE=false; killall ip sleep;" TERM INT
 
 echo "MINKE:UP"
 
