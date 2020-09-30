@@ -1,6 +1,6 @@
 FROM alpine:latest
 
-RUN apk add bash miniupnpc iptables iproute2
+RUN apk add bash miniupnpc iptables iproute2 inotify-tools
 
 COPY root/ /
 RUN chmod 755 /wondershaper.sh /health.sh /startup.sh

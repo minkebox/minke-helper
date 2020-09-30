@@ -81,6 +81,15 @@ if [ "${__SECONDARY_INTERFACE_BANDWIDTH}" != "" ]; then
   /wondershaper.sh -a ${__SECONDARY_INTERFACE} -u ${__SECONDARY_INTERFACE_BANDWIDTH} -d ${__SECONDARY_INTERFACE_BANDWIDTH}
 fi
 
+# Monitor network changes
+if [ "${__DEFAULT_INTERFACE}" != "" ]; then
+  flags="/sys/class/net/${__DEFAULT_INTERFACE}/flags"
+  echo "MINKE:DEFAULT:FLAGS $(cat ${flags})"
+  (inotifywait --quiet --monitor ${flags} --event modify | while read event; do
+    echo "MINKE:DEFAULT:FLAGS $(cat ${flags})"
+  done) &
+fi
+
 # We open any NAT ports.
 if [ "${__NAT_INTERFACE}" != "" -a "${ENABLE_NAT}" != "" ]; then
 
@@ -139,7 +148,7 @@ if [ "${FETCH_REMOTE_IP}" != "" ]; then
 
 fi
 
-trap "ACTIVE=false; killall sleep;" TERM INT
+trap "ACTIVE=false; killall inotifywait sleep;" TERM INT
 
 echo "MINKE:UP"
 
