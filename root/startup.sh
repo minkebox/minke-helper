@@ -5,6 +5,8 @@ RETRY=10 # 10 seconds
 TTL=3600 # 1 hour
 TTL2=1800 # TTL/2
 
+date
+
 # Wait for interfaces to become ready
 for iface in ${__DEFAULT_INTERFACE} ${__DHCP_INTERFACE} ${__NAT_INTERFACE} ${__INTERNAL_INTERFACE} ${__SECONDARY_INTERFACE} ${__DNS_INTERFACE}; do
   while ! ifconfig ${iface} > /dev/null 2>&1 ; do
@@ -102,6 +104,7 @@ if [ "${__NAT_INTERFACE}" != "" -a "${ENABLE_NAT}" != "" ]; then
   # is changed by the app (e.g. VPN's might setup a bridge). Just let upnpc work it out.
   natup()
   {
+    date
     while ${ACTIVE}; do
       for map in ${ENABLE_NAT}; do
         # port:protocol
@@ -133,6 +136,7 @@ if [ "${FETCH_REMOTE_IP}" != "" ]; then
 
   remoteip()
   {
+    date
     while ${ACTIVE}; do
       timeout=${RETRY}
       remote_ip=$(wget -q -T 5 -O - http://api.ipify.org)
