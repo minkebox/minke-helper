@@ -31,8 +31,8 @@ fi
 # Report the default interface IP (may match the DHCP ip)
 if [ "${__DEFAULT_INTERFACE}" != "" ]; then
   if [ "${__DEFAULT_INTERFACE_IP}" != "" ]; then
-    ip addr change ${__DEFAULT_INTERFACE_IP} dev ${__DEFAULT_INTERFACE}
-    echo "MINKE:STATIC:IP ${__DEFAULT_INTERFACE_IP}"
+    ip addr replace ${__DEFAULT_INTERFACE_IP} dev ${__DEFAULT_INTERFACE}
+    echo "MINKE:STATIC:IP $(echo ${__DEFAULT_INTERFACE_IP} | sed s:/.*::)"
     echo "MINKE:STATIC:UP ${__DEFAULT_INTERFACE}"
   fi
   DEFAULT_IP=$(ip addr show dev ${__DEFAULT_INTERFACE} | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -1)
