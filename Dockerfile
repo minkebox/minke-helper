@@ -1,6 +1,6 @@
 FROM alpine:3.12
 
-RUN apk add bash miniupnpc iptables iproute2
+RUN apk add bash miniupnpc iptables iproute2 mtr tcpdump
 
 COPY root/ /
 RUN chmod 755 /wondershaper.sh /health.sh /startup.sh
