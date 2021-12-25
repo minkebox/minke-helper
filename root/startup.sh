@@ -2,8 +2,12 @@
 
 ACTIVE=true
 RETRY=10 # 10 seconds
-TTL=3600 # 1 hour
-TTL2=1800 # TTL/2
+
+#TTL=3600 # 1 hour
+#TTL2=1800 # TTL/2
+
+TTL=
+TTL2=1d
 
 date
 
@@ -17,11 +21,10 @@ NR_IFACES=$(ls -1d /sys/class/net/eth* | wc -l)
 
 # Allocate an IP to the home interface via DHCP
 if [ "${__DHCP_INTERFACE}" != "" ]; then
-  # Reset mac addess is nececessary. We may need to do this is the interface is secondary.
+  # Reset mac addess is nececessary. We may need to do this if the interface is secondary.
   if [ "${__DHCP_INTERFACE_MAC}" != "" ]; then
     ip link set dev ${__DHCP_INTERFACE} address ${__DHCP_INTERFACE_MAC}
   fi
-  #udhcpc -i ${__DHCP_INTERFACE} -s /etc/udhcpc.script -F ${HOSTNAME} -x hostname:${HOSTNAME} -C -x 61:"'${HOSTNAME}'"
   udhcpc -i ${__DHCP_INTERFACE} -s /etc/udhcpc.script -F ${HOSTNAME} -x hostname:${HOSTNAME}
   ip=$(ip addr show dev ${__DHCP_INTERFACE} | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -1)
   echo "MINKE:DHCP:IP ${ip}"
@@ -116,9 +119,9 @@ if [ "${__NAT_INTERFACE}" != "" -a "${ENABLE_NAT}" != "" ]; then
         # port:protocol
         port=${map%%:*}
         protocol=${map#*:}
-        upnpc -e ${HOSTNAME} -a ${NAT_IP} ${port} ${port} ${protocol} # ${TTL}
+        upnpc -e ${HOSTNAME} -a ${NAT_IP} ${port} ${port} ${protocol} ${TTL}
         if [ "${NAT_IP6}" != "" ]; then
-          upnpc -e ${HOSTNAME}_6 -6 -A "" 0 ${NAT_IP6} ${port} ${protocol} # ${TTL}
+          upnpc -e ${HOSTNAME}_6 -6 -a ${NAT_IP6} ${port} ${port} ${protocol} ${TTL}
         fi
       done
       sleep ${TTL2} &
