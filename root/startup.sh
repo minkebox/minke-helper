@@ -4,10 +4,8 @@ ACTIVE=true
 RETRY=10 # 10 seconds
 
 #TTL=3600 # 1 hour
-#TTL2=1800 # TTL/2
-
 TTL=
-TTL2=1d
+TTL2=1800 # 30 minutes
 
 date
 
