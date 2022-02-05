@@ -15,6 +15,7 @@ case "$1" in
       fi
     fi
     echo "${ip}" > /tmp/lastip.${interface}
+    echo "${dns}" > /tmp/dns.${interface}
     ;;
   renew)
     ;;

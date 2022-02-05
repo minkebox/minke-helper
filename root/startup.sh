@@ -27,6 +27,10 @@ if [ "${__DHCP_INTERFACE}" != "" ]; then
   ip=$(ip addr show dev ${__DHCP_INTERFACE} | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b" | head -1)
   echo "MINKE:DHCP:IP ${ip}"
   echo "MINKE:DHCP:UP ${__DHCP_INTERFACE}"
+  # Use DHCP DNS server if we don't have one
+  if [ "${__DNSSERVER}" = "" ]; then
+    __DNSSERVER="$(cat /tmp/dns.${__DHCP_INTERFACE})"
+  fi
 fi
 
 # Report the default interface IP (may match the DHCP ip)
