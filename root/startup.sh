@@ -121,9 +121,9 @@ if [ "${__NAT_INTERFACE}" != "" -a "${ENABLE_NAT}" != "" ]; then
         # port:protocol
         port=${map%%:*}
         protocol=${map#*:}
-        upnpc -e ${HOSTNAME} -a ${NAT_IP} ${port} ${port} ${protocol} ${TTL}
+        upnpc -m ${NAT_IP} -e ${HOSTNAME} -a ${NAT_IP} ${port} ${port} ${protocol} ${TTL}
         if [ "${NAT_IP6}" != "" ]; then
-          upnpc -e ${HOSTNAME}_6 -6 -a ${NAT_IP6} ${port} ${port} ${protocol} ${TTL}
+          upnpc -6 -m ${NAT_IP6} -e ${HOSTNAME}_6 -a ${NAT_IP6} ${port} ${port} ${protocol} ${TTL}
         fi
       done
       sleep ${TTL2} &
@@ -133,9 +133,9 @@ if [ "${__NAT_INTERFACE}" != "" -a "${ENABLE_NAT}" != "" ]; then
       # port:protocol
       port=${map%%:*}
       protocol=${map#*:}
-      upnpc -d ${port} ${protocol}
+      upnpc -m ${NAT_IP} -d ${port} ${protocol}
       if [ "${NAT_IP6}" != "" ]; then
-        upnpc -6 -d ${port} ${protocol}
+        upnpc -6 -m ${NAT_IP} -d ${port} ${protocol}
       fi
     done
   }
